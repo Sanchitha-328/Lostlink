@@ -68,3 +68,8 @@ http://127.0.0.1:5000
 B.Voc – Software and Application Development
 
 GitHub: https://github.com/Sanchitha-328
+
+
+## Screenshots
+
+![LostLink Homepage](screenshots/homepage.png)
