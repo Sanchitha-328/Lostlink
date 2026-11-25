@@ -1,0 +1,41 @@
+{% extends "base.html" %}{% block title %}Find what matters{% endblock %}
+{% block content %}
+<section class="hero p-4 p-lg-5 mb-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <span class="eyebrow">A kinder campus starts here</span>
+      <h1 class="display-4 fw-bold mt-3">Lost something?<br><span class="text-gradient">Let's bring it back.</span></h1>
+      <p class="lead text-secondary mt-3">A smarter, safer way to reconnect lost belongings with the people who miss them.</p>
+      <div class="d-flex flex-wrap gap-2 mt-4">
+        {% if current_user %}<a class="btn btn-primary btn-lg rounded-pill px-4" href="{{ url_for('create_report') }}">＋ Report an item</a>{% else %}<a class="btn btn-primary btn-lg rounded-pill px-4" href="{{ url_for('register') }}">Get started</a>{% endif %}
+        <a class="btn btn-outline-dark btn-lg rounded-pill px-4" href="#reports">Browse reports</a>
+      </div>
+    </div>
+    <div class="col-lg-5"><div class="hero-art"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="floating-card card-one">🎧 <span>Found nearby</span></div><div class="floating-card card-two">🔑 <span>Possible match!</span></div><div class="hero-icon">🔎</div><div class="spark spark-one">✦</div><div class="spark spark-two">✧</div></div></div>
+  </div>
+</section>
+<div class="row g-3 mb-5">
+  <div class="col-4"><div class="stat-card"><span>Open reports</span><strong>{{ totals.open }}</strong></div></div>
+  <div class="col-4"><div class="stat-card"><span>Items returned</span><strong>{{ totals.returned }}</strong></div></div>
+  <div class="col-4"><div class="stat-card"><span>Student members</span><strong>{{ totals.users }}</strong></div></div>
+</div>
+<section id="reports">
+  <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4"><div><span class="eyebrow">Community board</span><h2 class="fw-bold mt-2">Recently reported</h2><p class="text-secondary mb-0">Browse reports and look for a familiar item.</p></div></div>
+  <form class="filter-panel mb-4" method="get">
+    <div class="row g-2">
+      <div class="col-lg-5"><input class="form-control" name="q" value="{{ q }}" placeholder="Search name, description or location…"></div>
+      <div class="col-6 col-lg-3"><select class="form-select" name="type"><option value="">Lost + Found</option><option value="lost" {% if selected_type=='lost' %}selected{% endif %}>Lost</option><option value="found" {% if selected_type=='found' %}selected{% endif %}>Found</option></select></div>
+      <div class="col-6 col-lg-2"><select class="form-select" name="category"><option value="">All categories</option>{% for c in categories %}<option {% if selected_category==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select></div>
+      <div class="col-lg-2 d-grid"><button class="btn btn-dark rounded-pill">Search</button></div>
+    </div>
+  </form>
+  <div class="row g-4">
+    {% for r in reports %}
+    <div class="col-md-6 col-xl-4"><article class="item-card h-100">
+      {% if r.image_filename %}<img class="item-image" src="{{ url_for('uploaded_file', filename=r.image_filename) }}" alt="Photo of {{ r.title }}">{% else %}<div class="item-placeholder">{% if r.report_type=='lost' %}🔍{% else %}🎁{% endif %}</div>{% endif %}
+      <div class="p-4"><div class="d-flex justify-content-between gap-2"><span class="type-tag {{ r.report_type }}">{{ r.report_type }} item</span><span class="small text-secondary">{{ r.event_date }}</span></div><h5 class="fw-bold mt-3">{{ r.title }}</h5><p class="text-secondary small clamp">{{ r.description }}</p><div class="small text-secondary mb-3">📍 {{ r.location }} · {{ r.category }}</div><a class="btn btn-outline-dark rounded-pill w-100" href="{{ url_for('report_detail', report_id=r.id) }}">View report →</a></div>
+    </article></div>
+    {% else %}<div class="col-12"><div class="empty-state"><div>🪴</div><h4>No reports found</h4><p>Try another search, or be the first to report an item.</p></div></div>{% endfor %}
+  </div>
+</section>
+{% endblock %}

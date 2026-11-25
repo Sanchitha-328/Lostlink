@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}{{ 'Create account' if mode=='register' else 'Log in' }}{% endblock %}
+{% block content %}<div class="auth-wrap"><div class="auth-art"><div class="big-emoji">{{ '🧡' if mode=='register' else '🔐' }}</div><span class="eyebrow">Your campus community</span><h2 class="fw-bold mt-3">{{ 'Good things find their way back.' if mode=='register' else 'Welcome back to LostLink.' }}</h2><p class="text-secondary">Every report brings a lost belonging one step closer to home.</p></div>
+<div class="auth-card"><h2 class="fw-bold">{{ 'Create your account' if mode=='register' else 'Log in' }}</h2><p class="text-secondary mb-4">{{ 'Join the community and help reunite lost items.' if mode=='register' else 'Pick up where you left off.' }}</p>
+<form method="post">
+{% if mode=='register' %}<label class="form-label">Full name</label><input class="form-control mb-3" name="name" required minlength="2" autocomplete="name" placeholder="Your name">{% endif %}
+<label class="form-label">Email address</label><input class="form-control mb-3" type="email" name="email" required autocomplete="email" placeholder="you@example.com">
+<label class="form-label">Password</label><input class="form-control mb-4" type="password" name="password" required minlength="8" autocomplete="{{ 'new-password' if mode=='register' else 'current-password' }}" placeholder="At least 8 characters">
+<button class="btn btn-primary btn-lg rounded-pill w-100">{{ 'Create account' if mode=='register' else 'Log in' }}</button>
+</form><p class="text-secondary small mt-4 mb-0">{% if mode=='register' %}Already a member? <a href="{{ url_for('login') }}">Log in</a>{% else %}New here? <a href="{{ url_for('register') }}">Create an account</a>{% endif %}</p></div></div>{% endblock %}

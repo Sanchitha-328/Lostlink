@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <span class="eyebrow">Private conversation updates</span>
+    <h1 class="fw-bold mt-2">Inbox</h1>
+    <p class="text-secondary">
+        Chat privately with the other person to arrange a safe handover.
+    </p>
+</div>
+
+{% if active_report %}
+    <div class="panel mb-3">
+        <a href="{{ url_for('inbox') }}" class="small">← All conversations</a>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mt-3">
+            <div>
+                <h4 class="fw-bold mb-1">{{ active_report.title }}</h4>
+                <p class="text-secondary small mb-1">
+                    Conversation with {{ other_user.name }}
+                </p>
+                <span class="badge bg-light text-dark">
+                    Handover: {{ active_report.handover_method or 'To be arranged' }}
+                </span>
+            </div>
+            <a href="{{ url_for('report_detail', report_id=active_report.id) }}"
+               class="btn btn-sm btn-outline-secondary rounded-pill">
+                View report
+            </a>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="conversation-messages">
+            {% for m in messages %}
+                <div class="message-row">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <strong>
+                            {% if m.sender_id == user.id %}You{% else %}{{ m.sender_name }}{% endif %}
+                        </strong>
+                        <small class="text-secondary">{{ m.created_at }}</small>
+                    </div>
+                    <p class="mt-2 mb-1">{{ m.body }}</p>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div>💬</div>
+                    <h4>Start your conversation</h4>
+                    <p>Send a message to agree on a meeting time and safe campus location.</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <hr>
+        <form method="post" action="{{ url_for('send_message', report_id=active_report.id) }}">
+            <label class="form-label">Your message</label>
+            <textarea class="form-control mb-3"
+                      name="body"
+                      rows="3"
+                      maxlength="1000"
+                      required
+                      placeholder="Hi! When and where would be convenient to meet?"></textarea>
+            <button class="btn btn-primary rounded-pill px-4">
+                Send message
+            </button>
+        </form>
+    </div>
+
+{% else %}
+    <div class="panel">
+        <h5 class="fw-bold mb-3">Your conversations</h5>
+
+        {% for c in conversations %}
+            <a href="{{ url_for('inbox', report_id=c.report_id) }}"
+               class="message-row d-block text-decoration-none">
+                <div class="d-flex justify-content-between flex-wrap gap-2">
+                    <strong class="text-dark">{{ c.report_title }}</strong>
+                    <small class="text-secondary">{{ c.last_time or '' }}</small>
+                </div>
+                <div class="small text-secondary mt-1">
+                    Chat with {{ c.other_name }}
+                    {% if c.handover_method %} · {{ c.handover_method }}{% endif %}
+                </div>
+                <p class="text-secondary small mt-2 mb-0">
+                    {{ c.last_message or 'No messages yet. Open to start chatting.' }}
+                </p>
+            </a>
+        {% else %}
+            <div class="empty-state">
+                <div>💬</div>
+                <h4>No conversations yet</h4>
+                <p>
+                    Once a report owner approves a claim and starts the handover,
+                    the private conversation will appear here.
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}

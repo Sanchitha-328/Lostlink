@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}{{ report.title }}{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('index') }}" class="back-link">← Back to reports</a>
+
+<div class="row g-4 mt-2">
+    <div class="col-lg-7">
+        <div class="detail-card">
+            {% if report.image_filename %}
+                <img class="detail-image"
+                     src="{{ url_for('uploaded_file', filename=report.image_filename) }}"
+                     alt="Photo of {{ report.title }}">
+            {% else %}
+                <div class="detail-placeholder">🔎</div>
+            {% endif %}
+
+            <div class="p-4 p-lg-5">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="type-tag {{ report.report_type }}">{{ report.report_type }} item</span>
+                    <span class="status-tag">{{ report.status }}</span>
+                    <span class="small text-secondary ms-auto">{{ report.event_date }}</span>
+                </div>
+
+                <h1 class="fw-bold mt-3">{{ report.title }}</h1>
+                <p class="text-secondary">{{ report.description }}</p>
+
+                <div class="info-grid">
+                    <div><small>Category</small><strong>{{ report.category }}</strong></div>
+                    <div><small>Location</small><strong>{{ report.location }}</strong></div>
+                    <div><small>Reported by</small><strong>{{ report.reporter }}</strong></div>
+                    <div><small>Report ID</small><strong>LL-{{ '%04d'|format(report.id) }}</strong></div>
+                </div>
+
+                {% if report.status == 'returned' %}
+                    <div class="alert alert-success mt-4">
+                        ✓ This item has been marked returned after both parties confirmed the handover.
+                        {% if report.handover_method %}Handover method: {{ report.handover_method }}.{% endif %}
+                    </div>
+                {% endif %}
+
+                {% if current_user and current_user.id != report.user_id and (report.status == 'open' or existing_claim) %}
+                    <hr class="my-4">
+
+                    {% if report.report_type == 'lost' %}
+                        <h5 class="fw-bold">Did you find this item? 🔎</h5>
+                        <p class="small text-secondary">
+                            Found this item? Contact its owner and provide details to help verify it.
+                        </p>
+                        {% set message_placeholder = "I found this item at..." %}
+                        {% set verification_placeholder = "Describe where and when you found it. Keep some identifying details private." %}
+                        {% set button_text = "Send Found Item Claim" %}
+                    {% else %}
+                        <h5 class="fw-bold">Is this your item? 🔑</h5>
+                        <p class="small text-secondary">
+                            Submit a claim with details only the owner would know. Don't include sensitive information.
+                        </p>
+                        {% set message_placeholder = "I believe this item belongs to me because..." %}
+                        {% set verification_placeholder = "Share identifying details that help verify ownership." %}
+                        {% set button_text = "Submit Ownership Claim" %}
+                    {% endif %}
+
+                    {% if existing_claim %}
+                        <div class="alert alert-info">
+                            Your claim status: <strong>{{ existing_claim.status }}</strong>
+                        </div>
+
+                        {% if existing_claim.status == 'approved' and existing_claim.handover_started %}
+                            <div class="alert alert-light border mt-3">
+                                <strong>Handover method:</strong> {{ report.handover_method or 'To be arranged' }}
+                                <p class="small mb-2 mt-2">
+                                    Use the private Inbox to agree on a meeting time and safe campus location.
+                                </p>
+                                <a class="btn btn-outline-primary btn-sm rounded-pill"
+                                   href="{{ url_for('inbox', report_id=report.id) }}">
+                                    <i class="bi bi-chat-dots"></i> Open Inbox conversation
+                                </a>
+                            </div>
+
+                            {% if existing_claim.claimant_confirmed %}
+                                <div class="alert alert-info">
+                                    You confirmed your side. Waiting for the other party to confirm.
+                                </div>
+                            {% else %}
+                                <form method="post"
+                                      action="{{ url_for('review_claim', claim_id=existing_claim.id, action='confirm') }}"
+                                      class="mt-3">
+                                    <button class="btn btn-success rounded-pill px-4">
+                                        {% if report.report_type == 'lost' %}
+                                            I handed over the item
+                                        {% else %}
+                                            I received the item
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                <small class="text-secondary d-block mt-2">
+                                    Only confirm after the real handover has happened.
+                                </small>
+                            {% endif %}
+                        {% elif existing_claim.status == 'approved' %}
+                            <p class="small text-secondary">
+                                Your claim was approved. The report owner will start the handover and open the Inbox conversation.
+                            </p>
+                        {% elif existing_claim.status == 'completed' %}
+                            <div class="alert alert-success">Both parties confirmed the handover. This item is returned.</div>
+                        {% endif %}
+                    {% else %}
+                        <form method="post" action="{{ url_for('create_claim', report_id=report.id) }}">
+                            <label class="form-label">Message to owner/finder</label>
+                            <textarea class="form-control mb-3"
+                                      name="message"
+                                      required
+                                      minlength="5"
+                                      placeholder="{{ message_placeholder }}"></textarea>
+
+                            <label class="form-label">Private verification details</label>
+                            <textarea class="form-control mb-3"
+                                      name="verification_note"
+                                      required
+                                      minlength="5"
+                                      placeholder="{{ verification_placeholder }}"></textarea>
+
+                            <button class="btn btn-primary rounded-pill px-4">{{ button_text }}</button>
+                        </form>
+                    {% endif %}
+
+                {% elif not current_user %}
+                    <div class="alert alert-light mt-4">
+                        Please <a href="{{ url_for('login') }}">log in</a> to submit a claim.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="side-panel">
+            <span class="eyebrow">Smart matching</span>
+            <h4 class="fw-bold mt-2">Possible matches</h4>
+            <p class="text-secondary small">
+                Suggestions use category, text, location and date. A score is not proof of ownership.
+            </p>
+
+            {% for m in matches %}
+                <a class="match-row" href="{{ url_for('report_detail', report_id=m.report.id) }}">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                            <span class="type-tag {{ m.report.report_type }}">{{ m.report.report_type }}</span>
+                            <h6 class="fw-bold mt-2 mb-1">{{ m.report.title }}</h6>
+                            <small class="text-secondary">{{ m.report.location }} · {{ m.report.event_date }}</small>
+                        </div>
+                        <span class="score">{{ m.score }}/100</span>
+                    </div>
+                    <div class="progress mt-3">
+                        <div class="progress-bar" style="width: {{ m.score }}%"></div>
+                    </div>
+                    <small class="text-secondary d-block mt-2">
+                        {{ m.reasons|join(' · ') if m.reasons else 'Some fields overlap' }}
+                    </small>
+                </a>
+            {% else %}
+                <div class="empty-mini">No likely matches yet. We'll keep checking as new reports are added.</div>
+            {% endfor %}
+
+            <div class="safety-note mt-4">
+                <strong>🛡️ Safe handover</strong>
+                <p class="small mb-0 mt-2">
+                    Use the college security office when possible. Don't publicly reveal serial numbers,
+                    passwords, full ID details or other private information.
+                </p>
+            </div>
+        </div>
+
+        {% if claims %}
+            <div class="side-panel mt-4">
+                <h5 class="fw-bold">Claims to review</h5>
+
+                {% for c in claims %}
+                    <div class="claim-row">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ c.claimant }}</strong>
+                            <span class="status-tag">{{ c.status }}</span>
+                        </div>
+
+                        <p class="small mt-2 mb-1">{{ c.message }}</p>
+                        <p class="small text-secondary">Verification details: {{ c.verification_note }}</p>
+
+                        {% if c.status == 'pending' %}
+                            <div class="d-flex gap-2">
+                                <form method="post" action="{{ url_for('review_claim', claim_id=c.id, action='approve') }}">
+                                    <button class="btn btn-sm btn-success rounded-pill">Approve</button>
+                                </form>
+                                <form method="post" action="{{ url_for('review_claim', claim_id=c.id, action='reject') }}">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill">Reject</button>
+                                </form>
+                            </div>
+
+                        {% elif c.status == 'approved' and not c.handover_started %}
+                            <form method="post"
+                                  action="{{ url_for('review_claim', claim_id=c.id, action='start') }}"
+                                  class="mt-3">
+                                <label class="form-label small">Choose handover method</label>
+                                <select class="form-select form-select-sm mb-2" name="handover_method" required>
+                                    <option value="">Choose an option</option>
+                                    <option>Security office</option>
+                                    <option>Library desk</option>
+                                    <option>In-person safe campus location</option>
+                                </select>
+                                <button class="btn btn-sm btn-primary rounded-pill">
+                                    Start handover
+                                </button>
+                            </form>
+
+                        {% elif c.status == 'approved' and c.handover_started %}
+                            <div class="alert alert-light border mt-3 mb-2">
+                                <strong>Handover method:</strong> {{ report.handover_method }}
+                                <p class="small mb-2 mt-1">The item is NOT marked returned yet.</p>
+                                <a class="btn btn-sm btn-outline-primary rounded-pill"
+                                   href="{{ url_for('inbox', report_id=report.id) }}">
+                                    Open Inbox conversation
+                                </a>
+                            </div>
+
+                            {% if c.owner_confirmed %}
+                                <div class="alert alert-info small">You confirmed. Waiting for the other party.</div>
+                            {% else %}
+                                <form method="post"
+                                      action="{{ url_for('review_claim', claim_id=c.id, action='confirm') }}">
+                                    <button class="btn btn-sm btn-success rounded-pill">
+                                        {% if report.report_type == 'lost' %}
+                                            Confirm I received the item
+                                        {% else %}
+                                            Confirm I handed over the item
+                                        {% endif %}
+                                    </button>
+                                </form>
+                                <small class="text-secondary d-block mt-1">
+                                    Click only after the actual handover.
+                                </small>
+                            {% endif %}
+
+                        {% elif c.status == 'completed' %}
+                            <div class="alert alert-success small mt-2">
+                                Both parties confirmed this handover.
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
