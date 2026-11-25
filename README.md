@@ -69,7 +69,6 @@ B.Voc – Software and Application Development
 
 GitHub: https://github.com/Sanchitha-328
 
-
 ## Screenshots
 
-![LostLink Homepage](screenshots/homepage.png)
+![LostLink Homepage](screenshot/homepage.png)
