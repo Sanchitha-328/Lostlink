@@ -1,87 +1,70 @@
-# LostLink — Smart Campus Lost & Found
+# LostLink – Lost and Found Web Application
 
-A Flask + SQLite full-stack starter project for reporting lost/found items, suggesting possible matches, submitting ownership claims, private messaging, notifications, safe handover tracking, and admin moderation.
+LostLink is a web-based application designed to help people report, search for, and recover lost belongings through an organized online platform.
 
-## Requirements
-- Python 3.10+
-- pip
-- Windows, macOS, or Linux
+## Features
 
-## Run on Windows (PowerShell)
-1. Extract the ZIP file.
-2. Open the extracted `LostLink` folder in VS Code.
-3. Open Terminal → New Terminal.
-4. Create a virtual environment:
-   ```powershell
-   py -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
-   If PowerShell blocks activation, use:
-   ```powershell
-   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-   .\.venv\Scripts\python.exe app.py
-   ```
-5. Install dependencies:
-   ```powershell
-   python -m pip install -r requirements.txt
-   ```
-6. Start:
-   ```powershell
-   python app.py
-   ```
-7. Open http://127.0.0.1:5000
+- Report lost and found items.
+- Browse and view item reports.
+- Submit and manage claims.
+- User authentication.
+- Private messaging and notifications.
+- Admin management interface.
 
-## First admin login (local demo only)
-- Email: `admin@lostlink.local`
-- Password: `ChangeMe123!`
+## Technologies Used
 
-Change this immediately for any shared or deployed instance. The initial admin is created only if that email doesn't already exist in the database. For a different initial admin, set environment variables **before the first run**:
-- `LOSTLINK_ADMIN_EMAIL`
-- `LOSTLINK_ADMIN_PASSWORD`
-- `LOSTLINK_SECRET_KEY`
+- **Frontend:** HTML, CSS, JavaScript
+- **Backend:** Python, Flask
+- **Database:** SQLite
 
-PowerShell example:
-```powershell
-$env:LOSTLINK_ADMIN_EMAIL="your-admin@example.com"
-$env:LOSTLINK_ADMIN_PASSWORD="use-a-long-unique-password"
-$env:LOSTLINK_SECRET_KEY="replace-with-a-long-random-secret"
+## Project Structure
+
+```text
+LostLink/
+├── app.py
+├── requirements.txt
+├── templates/
+└── static/
+    ├── style.css
+    └── app.js
+```
+
+## Installation and Setup
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/Sanchitha-328/Lostlink.git
+```
+
+2. Navigate to the project folder:
+
+```bash
+cd Lostlink
+```
+
+3. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+4. Run the application:
+
+```bash
 python app.py
 ```
-Do not share or commit real secrets.
 
-## Main routes
-- `/` Browse open reports
-- `/register`, `/login`, `/logout`
-- `/report` Create a lost/found report
-- `/report/<id>` Report detail, matching suggestions, claims
-- `/my-reports` Your reports and claims
-- `/notifications` Notifications
-- `/inbox` Private messages associated with claims
-- `/admin` Admin dashboard
+5. Open your browser and visit:
 
-## Included
-- Password hashing and session login
-- SQLite relational tables
-- Image extension validation and 5 MB upload limit
-- Explainable heuristic match score based on category, words, location, and date
-- Claim review and status transitions
-- Admin moderation and statistics
-- Private messaging available to users involved in a claim
-- Mobile-friendly templates
+```text
+http://127.0.0.1:5000
+```
 
-## Important limitations before real deployment
-This is a working educational MVP, not yet a security-audited production service. Before public deployment:
-- Replace the development secret with a long random secret stored in environment variables.
-- Use a production WSGI server (e.g. Waitress on Windows or Gunicorn on Linux); do not use Flask debug server.
-- Add CSRF protection (e.g. Flask-WTF), login rate limiting, email verification/password reset, and audit logging.
-- Add image content sniffing/re-encoding and malware scanning; extension checks alone are not sufficient for hostile public uploads.
-- Configure HTTPS, secure cookie settings, backups, monitoring, and retention/privacy policy.
-- Use a managed database and object storage if traffic grows.
-- Have college administration approve the process before using real student information.
-- The match score is a heuristic score, **not a verified probability** or proof of ownership. Always confirm ownership safely and use the campus security desk for handover.
+## Developer
 
-## Reset local demo data
-Stop the app, then delete `instance/lostlink.db` and files inside `uploads/`. Restart `python app.py`. This deletes all local demo accounts/reports/messages.
+**Sanchitha Poojary**
 
-## Git hygiene
-Do not commit `.venv/`, `instance/lostlink.db`, uploaded personal images, or secrets. See `.gitignore`.
+B.Voc – Software and Application Development
+
+GitHub: https://github.com/Sanchitha-328
